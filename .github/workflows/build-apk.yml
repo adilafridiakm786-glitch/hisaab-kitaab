@@ -14,9 +14,9 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
       - name: Install packages
-        run: npm install
+        run: npm install --legacy-peer-deps
       - name: Create Android project
         run: npx cap add android
       - name: Add mic permission
