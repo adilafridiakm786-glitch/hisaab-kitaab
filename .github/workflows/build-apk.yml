@@ -17,6 +17,11 @@ jobs:
           java-version: 21
       - name: Install packages
         run: npm install --legacy-peer-deps
+      - name: Prepare web files
+        run: |
+          mkdir -p www
+          if [ -f index.html ]; then cp index.html www/index.html; fi
+          ls -la www
       - name: Create Android project
         run: npx cap add android
       - name: Add mic permission
