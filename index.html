@@ -69,16 +69,17 @@ select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var
 .tg button{font:inherit;padding:10px;border-radius:10px;border:2px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
 .tg button.sel{border-color:var(--acc);font-weight:700}
 summary{cursor:pointer;padding:4px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chips button{font:inherit;font-size:15px;padding:8px 12px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+#dr .lbl{color:var(--mute);font-size:13px;margin-top:6px}
+#dr{overflow-y:auto}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.pg h2:first-child{margin-top:6px}
 </style>
 </head>
 <body>
 <script>window.onerror=function(m,u,l){var d=document.getElementById("eb");if(!d){d=document.createElement("div");d.id="eb";d.style.cssText="background:#b3261e;color:#fff;padding:8px;font:14px sans-serif;word-break:break-all";document.body.insertBefore(d,document.body.firstChild)}d.textContent="App mein error: "+m+" (line "+l+")"};</script>
 <div class="top"><button id="mb" aria-label="Menu kholo">☰</button><h1>Hisaab Kitaab<small id="ver"></small></h1></div>
-<div id="sumw"><div class="sum">
-  <div class="get"><small>Mujhe lena hai</small><b id="tg">₹0</b></div>
-  <div class="owe"><small>Mujhe dena hai</small><b id="to">₹0</b></div>
-</div></div>
-
 <div class="say">
   <button id="mic" aria-label="Mic on ya off karo">🎤</button>
   <p class="hint" id="hint">Mic ek baar dabao. Phir bas bolte raho, main sunti rahungi.</p>
@@ -88,45 +89,88 @@ summary{cursor:pointer;padding:4px 0}
 <div class="log" id="log" aria-live="polite"></div>
 <div id="yn" class="g2" hidden><button class="btn" id="yb">Haan</button><button class="btn no" id="nb">Nahi</button></div>
 
-<div id="home">
-<details id="mf" class="card" style="margin-top:14px"><summary><b>Likh kar entry karo</b> (bina awaaz ke)</summary>
-  <div class="row"><input id="mfn" list="dln" placeholder="Naam" autocomplete="off"><input id="mfa" type="number" inputmode="decimal" placeholder="Raqam" style="max-width:130px"></div>
-  <div class="tg g2"><button id="mfd" class="sel">Maine diye</button><button id="mft">Maine liye</button></div>
-  <div class="row"><select id="mfm" aria-label="Kaise"><option value="cash">Cash</option><option value="cheque">Cheque</option><option value="online">Online</option></select></div>
-  <div id="mfx" hidden><div class="row"><input id="mfb" list="dlb" placeholder="Bank" autocomplete="off"><input id="mfc" placeholder="Cheque number" inputmode="numeric"></div></div>
-  <div class="row"><input id="mfw" placeholder="Wajah (note)" autocomplete="off"></div>
-  <div class="row"><button class="btn" id="mfs" style="flex:1">Save karo</button></div>
-</details>
-<datalist id="dln"></datalist><datalist id="dlb"></datalist>
-<h2 id="dueh" hidden>Wade (yaad dihani)</h2><div id="duew"></div>
-<h2>Sab ke khaate</h2>
-<div id="list"></div>
-
-<h2 id="ledh">Ledger aur Export</h2>
-<div class="help" style="color:var(--ink)">
-  <select id="xs" aria-label="Kis ka ledger"></select>
-  <div class="g2">
-    <button class="btn" id="lv">Ledger dekho</button>
-    <button class="btn" data-x="pdf-dl">PDF download</button>
-    <button class="btn" data-x="pdf-sh">PDF share</button>
-    <button class="btn" data-x="xlsx-dl">Excel download</button>
-    <button class="btn" data-x="xlsx-sh">Excel share</button>
+<section class="pg" id="pg-home">
+  <div class="card">
+    <b style="font-size:22px">Assalam o Alaikum! 👋</b>
+    <p style="margin:8px 0 0">Hisaab Kitaab mein khush aamdeed.</p>
+    <p style="margin:8px 0 0;font-size:19px"><b>Aap kya karna chahte hain?</b></p>
+    <p class="hint" style="margin:8px 0 0">Mic dabao aur bolo, ya neeche likh kar bhejo. Baaqi sab kuch left menu (☰) mein hai.</p>
+    <div class="chips" id="chips">
+      <button data-ex="Total batao">Total batao</button>
+      <button data-ex="Pending cheque batao">Pending cheque</button>
+      <button data-ex="Aaj kis ka wada hai">Aaj ke wade</button>
+      <button data-ex="Madad">Madad</button>
+    </div>
   </div>
-</div>
-<div id="lvw" style="overflow-x:auto"></div>
+</section>
 
-<h2>Aakhri entries</h2>
-<div id="ent"></div>
+<section class="pg" id="pg-en" hidden>
+  <h2>Naya hisaab (likh kar)</h2>
+  <div class="card" id="mf">
+    <div class="row"><input id="mfn" list="dln" placeholder="Naam" autocomplete="off"><input id="mfa" type="number" inputmode="decimal" placeholder="Raqam" style="max-width:130px"></div>
+    <div class="tg g2"><button id="mfd" class="sel">Maine diye</button><button id="mft">Maine liye</button></div>
+    <div class="row"><select id="mfm" aria-label="Kaise"><option value="cash">Cash</option><option value="cheque">Cheque</option><option value="online">Online</option></select></div>
+    <div id="mfx" hidden><div class="row"><input id="mfb" list="dlb" placeholder="Bank" autocomplete="off"><input id="mfc" placeholder="Cheque number" inputmode="numeric"></div></div>
+    <div class="row"><input id="mfw" placeholder="Wajah (note)" autocomplete="off"></div>
+    <div class="row"><button class="btn" id="mfs" style="flex:1">Save karo</button></div>
+  </div>
+  <datalist id="dln"></datalist><datalist id="dlb"></datalist>
+</section>
 
-<h2>Kya kya bol sakte ho</h2>
-<div class="help">
-“Ramesh ko 500 diye” · “Suresh se 200 liye” · “Ramesh ne 300 wapas kiye” · “Ramesh ka hisaab batao” · “Ramesh ki history” · “Total batao” · “Sab ke naam batao” · “Ramesh ka hisaab saaf karo” · “Wapas” (aakhri entry hatao) · “Ramesh ko 5000 cheque diya, HDFC bank, number 123456, wajah dukaan ka kiraya” · “Aakhri entry mein note likho kiraya” · “Cheque number likho 123456” · “Ramesh ka ledger dikhao” · “Ramesh ka ledger PDF banao” · “Sab ka Excel share karo” · “Madad”
-<br>Naye (v0.2): “Bank add karo HDFC” · “Bank list batao” · “HDFC ke cheque batao” · “Pending cheque batao” · “Ramesh ka cheque clear ho gaya” · “Ramesh ka wada 15 tareekh” · “Aaj kis ka wada hai” · “Ramesh ka number 0300 1234567” · “Ramesh ko WhatsApp bhejo” · “Aaj ka hisaab batao” · “Aakhri entry ki raqam 600 karo” · “Backup lo”<br>Sab kuch awaaz se hota hai, lekin chaho to upar likh kar bhi bhej sakte ho.
-</div>
+<section class="pg" id="pg-pp" hidden>
+  <div id="ppl">
+    <div id="sumw"><div class="sum">
+  <div class="get"><small>Mujhe lena hai</small><b id="tg">₹0</b></div>
+  <div class="owe"><small>Mujhe dena hai</small><b id="to">₹0</b></div>
+</div></div>
+    <h2 id="dueh" hidden>Wade (yaad dihani)</h2><div id="duew"></div>
+    <h2>Khaate aur banday</h2>
+    <div class="row"><input id="pps" placeholder="Naam ya number se dhoondo" autocomplete="off"></div>
+    <details class="card" style="margin-top:10px"><summary><b>Naya banda jodo</b> (manual)</summary>
+      <div class="row"><input id="ppn" placeholder="Naam" autocomplete="off"><input id="ppp" placeholder="Mobile number" inputmode="tel"></div>
+      <div class="row"><input id="ppa" placeholder="Pata (address)" autocomplete="off"></div>
+      <div class="row"><input id="ppw" placeholder="Note (optional)" autocomplete="off"></div>
+      <div class="row"><button class="btn" id="ppadd" style="flex:1">Save karo</button></div>
+    </details>
+    <div id="list" style="margin-top:10px"></div>
+  </div>
+  <div id="ppd" hidden></div>
+</section>
 
-</div>
+<section class="pg" id="pg-bk" hidden>
+  <h2>Mere bank</h2>
+  <div class="card">
+    <div class="row"><input id="bkn" placeholder="Bank ka naam (jaise HDFC)" autocomplete="off"></div>
+    <div class="row"><input id="bkti" placeholder="Account title (naam)" autocomplete="off"><input id="bkacc" placeholder="Account number" inputmode="numeric"></div>
+    <div class="row"><input id="bkbr" placeholder="Branch (optional)" autocomplete="off"><button class="btn" id="bka">Bank save karo</button></div>
+    <div id="bkl" style="margin-top:10px"></div>
+  </div>
+  <div id="bkd"></div>
+  <h2>Pending cheque</h2>
+  <div id="chl"></div>
+</section>
 
-<div id="pcv" hidden>
+<section class="pg" id="pg-led" hidden>
+  <h2 id="ledh">Ledger, PDF aur Excel</h2>
+  <div class="help" style="color:var(--ink)">
+    <select id="xs" aria-label="Kis ka ledger"></select>
+    <div class="g2">
+      <button class="btn" id="lv">Ledger dekho</button>
+      <button class="btn" data-x="pdf-dl">PDF download</button>
+      <button class="btn" data-x="pdf-sh">PDF share</button>
+      <button class="btn" data-x="xlsx-dl">Excel download</button>
+      <button class="btn" data-x="xlsx-sh">Excel share</button>
+    </div>
+  </div>
+  <div id="lvw" style="overflow-x:auto"></div>
+</section>
+
+<section class="pg" id="pg-ak" hidden>
+  <h2>Aakhri entries</h2>
+  <div id="ent"></div>
+</section>
+
+<section class="pg" id="pcv" hidden>
   <h2>Percentage nikalo</h2>
   <div class="card">
     <div class="row"><input id="pcA" type="number" inputmode="decimal" placeholder="Raqam (₹)"><input id="pcP" type="number" inputmode="decimal" placeholder="Percent (%)"></div>
@@ -143,25 +187,35 @@ summary{cursor:pointer;padding:4px 0}
     <div class="keys" id="keys"></div>
   </div>
   <div class="help" style="margin-top:12px">Awaaz se: “5000 ka 12 percent” · “600 5000 ka kitne percent hai” · “5000 par 12 percent jodo” · “500 plus 200 minus 50” · “500 ko 2 se guna karo”</div>
-</div>
+</section>
 
-<div id="bkv" hidden>
-  <h2>Mere bank</h2>
-  <div class="card">
-    <div class="row"><input id="bkn" placeholder="Bank ka naam, jaise HDFC" autocomplete="off"><button class="btn" id="bka">Bank jodo</button></div>
-    <div id="bkl" style="margin-top:10px"></div>
+<section class="pg" id="pg-hp" hidden>
+  <h2>Kya kya bol sakte ho</h2>
+  <div class="help">
+  <b>Hisaab:</b> “Ramesh ko 500 diye” · “Suresh se 200 liye” · “Ramesh ne 300 wapas kiye” · “Ramesh ko 5000 cheque diya, HDFC bank, number 123456, wajah kiraya” · “Wapas” (aakhri entry hatao) · “Aakhri entry ki raqam 600 karo”<br>
+  <b>Poochna:</b> “Ramesh ka hisaab batao” · “Ramesh ki poori details batao” · “Ramesh ki history” · “Total batao” · “Sab ke naam batao” · “Aaj ka hisaab batao”<br>
+  <b>Naya banda:</b> “Naya banda jodo Ramesh number 0300 1234567”<br>
+  <b>Bank / cheque:</b> “Bank add karo HDFC” · “Bank list batao” · “HDFC ke cheque batao” · “Pending cheque batao” · “Ramesh ka cheque clear ho gaya”<br>
+  <b>Wade:</b> “Ramesh ka wada 15 tareekh” · “Aaj kis ka wada hai” · “Ramesh ko WhatsApp bhejo”<br>
+  <b>Ledger:</b> “Ramesh ka ledger PDF banao” · “Sab ka Excel share karo” · “Backup lo”<br>
+  <b>Page kholna:</b> “Khaate kholo” · “Bank kholo” · “Ledger kholo” · “Calculator kholo” · “Menu kholo”<br>
+  <b>Calculator:</b> “5000 ka 12 percent” · “500 plus 200 minus 50”
   </div>
-  <h2>Pending cheque</h2>
-  <div id="chl"></div>
-</div>
+</section>
+
 <input type="file" id="rf" accept=".json,application/json" hidden>
 <div id="scrim"></div>
 <nav id="dr" aria-label="Menu" aria-hidden="true">
   <b style="font-size:20px">Menu</b>
-  <button data-v="home">Hisaab (Home)</button>
-  <button data-v="pc">Percentage aur Calculator</button>
-  <button data-v="bk">Bank aur Cheque</button>
-  <button data-v="led">Ledger aur Export</button>
+  <button data-v="home">🏠 Shuruaat (Welcome)</button>
+  <button data-v="en">➕ Naya hisaab (likh kar)</button>
+  <button data-v="pp">👥 Khaate aur banday ki details</button>
+  <button data-v="bk">🏦 Bank aur Cheque</button>
+  <button data-v="led">📄 Ledger, PDF aur Excel</button>
+  <button data-v="ak">🕘 Aakhri entries</button>
+  <button data-v="pc">🧮 Percentage aur Calculator</button>
+  <button data-v="hp">🎤 Kya kya bol sakte ho</button>
+  <div class="lbl">Aur</div>
   <button id="bku">Backup lo</button>
   <button id="rs">Backup wapas lao</button>
   <button id="lg">Sunne ki zubaan</button>
@@ -171,7 +225,7 @@ summary{cursor:pointer;padding:4px 0}
 
 <script>
 (function(){
-var VER='0.3';
+var VER='0.4';
 var KEY='hisab-kitab-v1',mem=[];
 function load(){try{var r=localStorage.getItem(KEY);return r?JSON.parse(r):mem}catch(e){return mem}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(E))}catch(e){mem=E}}
@@ -184,7 +238,7 @@ function fmt(n){return Math.abs(n).toLocaleString('en-IN')}
 /* ---- parse ---- */
 var NUM={'chhe':6,'cheh':6,'saat':7,'aath':8,'nau':9,'tees':30,'chalis':40,'saath':60,'sattar':70,'assi':80,'nabbe':90,'pachees':25,'pandrah':15,'barah':12,'gyarah':11,'ek':1,'do':2,'teen':3,'char':4,'panch':5,'paanch':5,'das':10,'bees':20,'pachas':50,'dedh':1.5,'dhai':2.5,'एक':1,'दो':2,'तीन':3,'चार':4,'पांच':5,'पाँच':5,'छह':6,'छः':6,'सात':7,'आठ':8,'नौ':9,'दस':10,'बीस':20,'तीस':30,'चालीस':40,'पचास':50,'साठ':60,'सत्तर':70,'अस्सी':80,'नब्बे':90,'डेढ़':1.5,'डेढ':1.5,'ढाई':2.5,'पच्चीस':25,'पंद्रह':15,'बारह':12,'ग्यारह':11};
 var MUL={'sau':100,'hazar':1000,'hazaar':1000,'lakh':100000,'सौ':100,'हज़ार':1000,'हजार':1000,'लाख':100000};
-var STOP=new RegExp('^('+['यार','भाई','अरे','सुनो','सुन','देखो','अच्छा','तो','बस','ये','वो','जी','हाँ','हां','आज','अभी','कल','लिखो','लिख','डालो','डाल','जोड़ो','जोड़','एंट्री','कर','करो','मैंने','मैने','मैं','मुझे','मुझसे','हिसाब','खाते','में','का','की','के','नया','रुपये','रुपए','रुपया','रूपये','पैसे','diye','diya','liye','liya','kiye','kiya','mile','mila','de','दिए','दिया','दिये','लिए','लिया','लिये','किए','किया','मिले','मिला','दे','yaar','yar','bhai','are','arey','suno','sun','dekho','achha','accha','to','bas','ye','woh','wo','ji','haan','han','ok','okay','aaj','abhi','kal','likho','likh','dalo','dal','jodo','jod','add','entry','kar','karo','maine','main','mujhe','mujhse','hisaab','hisab','khate','mein','ka','ki','ke','naya','rupay','rupaye','rupaya','rupees','rupee','rs','paise','paisa','batao','bata','total','kul','history','saaf','safai','clear','settle','khatam','kitna','kitne','madad','help','mera','meri','mere','cheque','chek','clear','cleared','bounce','pending','wada','waada','wade','waade','wapsi','tareekh','tarikh','din','whatsapp','yaad','dilao','reminder','backup','jaanch','mahine','hafte','aakhri','last','raqam','amount','badlo','badal','gaya','gayi','khata','khaata','bank','percent','percentage','parsent','pratishat','परसेंटेज','पर्सेंटेज','प्रतिशत','परसेंट','पर्सेंट','फीसदी','फीसद','plus','jodo','minus','ghatao','guna','gunaa','into','multiply','bhaag','divide','calculator','calculate','kitne','nikalo','nikal','of','menu','kholo','band','home','version','bill','number','जोड़ो','घटाओ','गुणा','भाग','कैलकुलेटर','कितने','निकालो','मेन्यू','खोलो','बंद','होम','वर्शन','बिल','नंबर','ledger','pdf','excel','xlsx','banao','bana','dikhao','dikha','download','share','bhejo','bhej','sabka','poora','pura','लेजर','पीडीएफ','एक्सेल','बनाओ','दिखाओ','डाउनलोड','शेयर','भेजो','पूरा','सबका','wapas','undo','naam','list','sabhi','sab','बताओ','बता','कुल','टोटल','साफ','साफ़','खत्म','कितना','मदद','वापस','सब','नाम','सभी','लिस्ट','हिस्ट्री'].join('|')+')$','i');
+var STOP=new RegExp('^('+['यार','भाई','अरे','सुनो','सुन','देखो','अच्छा','तो','बस','ये','वो','जी','हाँ','हां','आज','अभी','कल','लिखो','लिख','डालो','डाल','जोड़ो','जोड़','एंट्री','कर','करो','मैंने','मैने','मैं','मुझे','मुझसे','हिसाब','खाते','में','का','की','के','नया','रुपये','रुपए','रुपया','रूपये','पैसे','diye','diya','liye','liya','kiye','kiya','mile','mila','de','दिए','दिया','दिये','लिए','लिया','लिये','किए','किया','मिले','मिला','दे','yaar','yar','bhai','are','arey','suno','sun','dekho','achha','accha','to','bas','ye','woh','wo','ji','haan','han','ok','okay','aaj','abhi','kal','likho','likh','dalo','dal','jodo','jod','add','entry','kar','karo','maine','main','mujhe','mujhse','hisaab','hisab','khate','mein','ka','ki','ke','naya','rupay','rupaye','rupaya','rupees','rupee','rs','paise','paisa','batao','bata','total','kul','history','saaf','safai','clear','settle','khatam','kitna','kitne','madad','help','details','detail','tafseel','poori','pura','baare','maloomat','info','banda','bande','aadmi','shakhs','contact','party','shuruaat','welcome','khaate','logon','mera','meri','mere','cheque','chek','clear','cleared','bounce','pending','wada','waada','wade','waade','wapsi','tareekh','tarikh','din','whatsapp','yaad','dilao','reminder','backup','jaanch','mahine','hafte','aakhri','last','raqam','amount','badlo','badal','gaya','gayi','khata','khaata','bank','percent','percentage','parsent','pratishat','परसेंटेज','पर्सेंटेज','प्रतिशत','परसेंट','पर्सेंट','फीसदी','फीसद','plus','jodo','minus','ghatao','guna','gunaa','into','multiply','bhaag','divide','calculator','calculate','kitne','nikalo','nikal','of','menu','kholo','band','home','version','bill','number','जोड़ो','घटाओ','गुणा','भाग','कैलकुलेटर','कितने','निकालो','मेन्यू','खोलो','बंद','होम','वर्शन','बिल','नंबर','ledger','pdf','excel','xlsx','banao','bana','dikhao','dikha','download','share','bhejo','bhej','sabka','poora','pura','लेजर','पीडीएफ','एक्सेल','बनाओ','दिखाओ','डाउनलोड','शेयर','भेजो','पूरा','सबका','wapas','undo','naam','list','sabhi','sab','बताओ','बता','कुल','टोटल','साफ','साफ़','खत्म','कितना','मदद','वापस','सब','नाम','सभी','लिस्ट','हिस्ट्री'].join('|')+')$','i');
 var MARK=/^(को|से|ने|ko|se|ne)$/i;
 function wordAmt(w){var tot=0,cur=0,got=false;for(var i=0;i<w.length;i++){var x=w[i];
   if(MUL[x]){got=true;if(MUL[x]===100)cur=(cur||1)*100;else{tot+=(cur||1)*MUL[x];cur=0}}
@@ -269,8 +323,7 @@ function totals(){var g=groups(),a=0,b=0;Object.keys(g).forEach(function(n){if(g
 function render(){ents();selUp();dueRender();fillLists();
   var g=groups(),ns=Object.keys(g).sort(function(a,b){return Math.abs(g[b])-Math.abs(g[a])}),t=totals();
   $('tg').textContent=rs(t[0]);$('to').textContent=rs(t[1]);
-  $('list').innerHTML=ns.length?ns.map(function(n){var v=g[n];
-    return '<div class="p"><span>'+esc(n)+'<small>'+(v>0?'Mujhe lena hai':v<0?'Mujhe dena hai':'Hisaab barabar')+'</small></span><span class="'+(v>0?'pos':v<0?'neg':'')+'">'+rs(v)+'</span></div>'}).join(''):'<div class="empty">Abhi koi hisaab nahi. Mic dabao aur bolo.</div>';
+  if($('pg-pp')&&!$('pg-pp').hidden)ppRender();
 }
 function add(n,a,type,note,x){
   x=x||{};var ex=E.find(function(e){return e.name.toLowerCase()===n.toLowerCase()});if(ex)n=ex.name;
@@ -312,6 +365,17 @@ function handle(t){
   var X=ext(t),P=parse(X.rest),has=P.amt>0,nm=findName(X.rest),L=t.toLowerCase();
   if(!has&&X.bank&&QRY.test(t)&&!/(add|jodo|naya|hata|delete|remove)/i.test(t)){bankReport(X.bank);return}
   if(!has&&/(bank|बैंक)/i.test(t)&&bankCmd(t))return;
+  if(!has&&!nm&&/(kholo|khol do|dikhao|dikha do|open|chalo|jao)/i.test(t)){
+    var PGW=[[/(shuruaat|welcome|home)/i,'home'],[/(naya hisaab|likh kar|entry form)/i,'en'],[/(khaate|logon|bande|banday|contact)/i,'pp'],[/(bank|cheque)/i,'bk'],[/(ledger|pdf|excel)/i,'led'],[/(aakhri entries|pichli entries|entries)/i,'ak'],[/(percentage|calculator|percent)/i,'pc'],[/(madad|kya kya|help)/i,'hp']];
+    for(var gi=0;gi<PGW.length;gi++){if(PGW[gi][0].test(t)){view(PGW[gi][1]);say('Khol diya.','खोल दिया।');return}}}
+  if(!has&&/((banda|bande|aadmi|shakhs|party|contact)\s+(add|jodo|jod|banao|dalo))|((add|jodo|naya|nayi)\s+(banda|aadmi|shakhs|party|contact))/i.test(t)){
+    var np=nrm(t).match(/(\+?\s*92|0)?[\d\s\-]{9,14}/),nd=np?np[0].replace(/\D/g,''):'';
+    var nn=nrm(t).replace(np?np[0]:'',' ').replace(/\b(naya|nayi|banda|bande|aadmi|shakhs|party|contact|add|jodo|jod|banao|dalo|number|mobile|phone|karo|kar|do|ka|ki)\b/ig,' ').replace(/\s+/g,' ').trim();
+    if(!nn){pend={free:function(t2){createPerson(t2.trim(),nd)}};showYN();say('Naam kya hai?','नाम क्या है?');return}
+    createPerson(nn,nd.length>=10?nd:'');return}
+  if(!has&&!X.bank&&/(details|detail|tafseel|poori|pura|baare mein|maloomat|malumat|info|jaankari)/i.test(t)&&!/history/i.test(t)){
+    if(!nm){say('Kis ki details? Naam bolo, jaise: Ramesh ki poori details batao.','किसकी डिटेल? नाम बोलो।');return}
+    ppOpen(nm);personInfo(nm);return}
   var pm=t.match(/(phone|mobile|fone|number|nambar|नंबर|फोन|मोबाइल)\D{0,12}((?:\+?\s*92|0)?[\d\s\-]{9,14})/i);
   if(pm&&X.mode!=='cheque'){var pd=nrm(pm[2]).replace(/\D/g,'');if(pd.length>=10&&pd.length<=13){var pn=findName(t.replace(pm[0],' '));if(pn){PH[pn]=normPhone(pd);sj(KP,PH);say(pn+' ka number likh liya.',pn+' का नंबर लिख लिया।');return}}}
   if(/(whatsapp|whats app|वॉट्सऐप|व्हाट्सएप|yaad dila|yaad kara|reminder|याद दिला)/i.test(t)){waCmd(nm);return}
@@ -462,7 +526,7 @@ function showLedger(scope){
     return '<h2>'+esc(c.name)+' - <span class="'+(c.bal>0?'pos':c.bal<0?'neg':'')+'">'+stat(c.bal)+' '+rs(c.bal)+'</span></h2><table class="tb"><tr><th>Tareekh</th><th>Vivaran</th><th class="r">Diye</th><th class="r">Liye</th><th class="r">Balance</th></tr>'+
     c.rows.map(function(r){var e=r.e;return '<tr><td>'+dstr(e.ts)+'</td><td>'+esc(detTxt(e))+'</td><td class="r">'+(e.type==='gave'?fmt(e.amt):'')+'</td><td class="r">'+(e.type==='took'?fmt(e.amt):'')+'</td><td class="r">'+bt(r.bal)+'</td></tr>'}).join('')+
     '<tr><th></th><th>Kul</th><th class="r">'+fmt(c.gave)+'</th><th class="r">'+fmt(c.took)+'</th><th class="r">'+bt(c.bal)+'</th></tr></table>'}).join(''):'<div class="empty">Ledger khali hai.</div>';
-  $('lvw').scrollIntoView({behavior:'smooth'});
+  view('led');$('lvw').scrollIntoView({behavior:'smooth'});
 }
 
 /* zip (bina compression) + xlsx */
@@ -739,10 +803,10 @@ function bankCmd(t){
 function chqs(){return E.filter(function(e){return e.mode==='cheque'})}
 function isPend(e){return e.st!=='cleared'&&e.st!=='bounced'}
 function bankReport(b){
-  var l=b.toLowerCase(),r=chqs().filter(function(e){return (e.bank||'').toLowerCase()===l}),tot=0,pd=0,pa=0;
+  var dx=bdOf(b),ds=dx&&(dx.acc||dx.title)?' Account '+(dx.title?dx.title+' ':'')+(dx.acc||'')+'.':'';var l=b.toLowerCase(),r=chqs().filter(function(e){return (e.bank||'').toLowerCase()===l}),tot=0,pd=0,pa=0;
   r.forEach(function(e){tot+=e.amt;if(isPend(e)){pd++;pa+=e.amt}});
   if(!r.length){say(b+' ka koi cheque nahi mila.',b+' का कोई चेक नहीं मिला।');return}
-  say(b+' ke '+r.length+' cheque, kul '+fmt(tot)+'. Pending '+pd+', un ki raqam '+fmt(pa)+'.',b+' के '+r.length+' चेक, कुल '+fmt(tot)+'। पेंडिंग '+pd+', उनकी रकम '+fmt(pa)+'।');
+  say(b+' ke '+r.length+' cheque, kul '+fmt(tot)+'. Pending '+pd+', un ki raqam '+fmt(pa)+'.'+ds,b+' के '+r.length+' चेक, कुल '+fmt(tot)+'। पेंडिंग '+pd+', उनकी रकम '+fmt(pa)+'।');
 }
 function pendList(nm){
   var r=chqs().filter(function(e){return isPend(e)&&(!nm||e.name===nm)});
@@ -860,7 +924,7 @@ $('mft').onclick=function(){mfType('took')};
 $('mfm').onchange=function(){$('mfx').hidden=this.value!=='cheque'};
 function fillLists(){
   var a=$('dln'),b=$('dlb');if(!a||!b)return;
-  a.innerHTML=Object.keys(groups()).map(function(n){return '<option value="'+esc(n)+'">'}).join('');
+  a.innerHTML=allNames().map(function(n){return '<option value="'+esc(n)+'">'}).join('');
   var bs=UB.slice();chqs().forEach(function(e){if(e.bank&&bs.indexOf(e.bank)<0)bs.push(e.bank)});
   b.innerHTML=bs.map(function(n){return '<option value="'+esc(n)+'">'}).join('');
 }
@@ -875,6 +939,119 @@ $('mfs').onclick=function(){
   ['mfn','mfa','mfb','mfc','mfw'].forEach(function(i){$(i).value=''});
   say('Likh liya: '+n+(mt==='gave'?' ko ':' se ')+fmt(a)+(mt==='gave'?' diye, ':' liye, ')+m+'.',n+(mt==='gave'?' को ':' से ')+fmt(a)+(mt==='gave'?' रुपये दिए':' रुपये लिए')+', लिख लिया।');
 };
+/* ---- v0.4: menu pages, khaate aur banday ki details, bank details ---- */
+var KX='hisab-kitab-people',KBD='hisab-kitab-bankdet';
+var PX=lj(KX,{}),BD=lj(KBD,{}),PS='';
+var PGS={home:'pg-home',en:'pg-en',pp:'pg-pp',bk:'pg-bk',led:'pg-led',ak:'pg-ak',pc:'pcv',hp:'pg-hp'};
+function view(v,keep){
+  if(!PGS[v])v='home';
+  Object.keys(PGS).forEach(function(k){var e=$(PGS[k]);if(e)e.hidden=(k!==v)});
+  if(v==='pp'&&!keep)PS='';
+  if(v==='pp')ppRender();if(v==='bk')bkRender();if(v==='led')selUp();if(v==='ak')ents();
+  menu(false);window.scrollTo(0,0);
+}
+function allNames(){var o={};E.forEach(function(e){o[e.name]=1});[PH,PX,DU].forEach(function(m){Object.keys(m).forEach(function(n){o[n]=1})});return Object.keys(o).sort(function(a,b){return a.toLowerCase()<b.toLowerCase()?-1:1})}
+function bdOf(b){var l=String(b).toLowerCase();for(var k in BD)if(k.toLowerCase()===l)return BD[k];return null}
+function ppOpen(n){PS=n;view('pp',1)}
+function ppRender(){
+  $('ppd').hidden=!PS;$('ppl').hidden=!!PS;
+  if(PS){ppDetail(PS);return}
+  var q=($('pps').value||'').trim().toLowerCase(),qd=q.replace(/\D/g,''),g=groups();
+  var ns=allNames().filter(function(n){if(!q)return true;if(n.toLowerCase().indexOf(q)>-1)return true;if(skey(q)&&skey(n)===skey(q))return true;return qd.length>=3&&(PH[n]||'').indexOf(qd.replace(/^0/,''))>-1});
+  $('list').innerHTML=ns.length?ns.map(function(n){var v=g[n]||0;
+    return '<div class="p" role="button" tabindex="0" data-n="'+esc(n)+'" style="cursor:pointer"><span>'+esc(n)+'<small>'+(v>0?'Mujhe lena hai':v<0?'Mujhe dena hai':'Hisaab barabar')+(PH[n]?' - '+esc(PH[n]):'')+'</small></span><span class="'+(v>0?'pos':v<0?'neg':'')+'">'+rs(v)+'</span></div>'}).join(''):'<div class="empty">Koi nahi mila. "Naya banda jodo" se naya khaata banao.</div>';
+}
+function ppDetail(n){
+  var c=sections(n)[0]||{rows:[],gave:0,took:0,bal:0},ph=PH[n]||'',x=PX[n]||{},pcs=chqs().filter(function(e){return e.name===n&&isPend(e)}),bk={},cnt=c.rows.length;
+  c.rows.forEach(function(r){var b=r.e.bank;if(b){bk[b]=bk[b]||{c:0,t:0};bk[b].c++;bk[b].t+=r.e.amt}});
+  var dv='';if(DU[n]){var d=new Date(DU[n]);dv=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+  var h='<button class="sm" data-a="back">← Wapas khaate</button><h2>'+esc(n)+'</h2>';
+  h+='<div class="card"><b class="'+(c.bal>0?'pos':c.bal<0?'neg':'')+'" style="font-size:22px">'+stat(c.bal)+' '+rs(c.bal)+'</b><div class="res">Kul diye: '+rs(c.gave)+'<br>Kul liye: '+rs(c.took)+'<br>Entries: '+cnt+(cnt?'<br>Pehli entry: '+dstr(c.rows[0].e.ts)+'<br>Aakhri entry: '+dstr(c.rows[cnt-1].e.ts):'')+(DU[n]?'<br>Wada: '+dstr(DU[n]):'')+'</div></div>';
+  h+='<h2>Rabta (contact)</h2><div class="card"><div class="row"><input id="ppph" placeholder="Mobile number" inputmode="tel" value="'+esc(ph)+'"></div><div class="row"><input id="ppad" placeholder="Pata (address)" value="'+esc(x.addr||'')+'"></div><div class="row"><input id="ppnt" placeholder="Note" value="'+esc(x.note||'')+'"></div><div class="g2"><button class="btn" data-a="savec">Save karo</button>'+(ph?'<a class="btn" style="text-align:center;text-decoration:none" href="tel:+'+esc(ph)+'">Call karo</a>':'<span></span>')+'</div><div class="row"><button class="btn" data-a="wa" style="flex:1">WhatsApp se yaad dihani</button></div></div>';
+  h+='<h2>Wada</h2><div class="card"><div class="row"><input id="ppdu" type="date" value="'+dv+'"></div><div class="g2"><button class="btn" data-a="saved">Wada save karo</button><button class="btn ghost" data-a="cleard">Wada hatao</button></div></div>';
+  h+='<h2>Bank aur cheque</h2><div class="card">'+(Object.keys(bk).length?Object.keys(bk).map(function(b){return esc(b)+': '+bk[b].c+' entries, '+rs(bk[b].t)}).join('<br>'):'Is ke saath koi bank wali lain-dain nahi.')+'</div>';
+  if(pcs.length)h+=pcs.map(function(e){return '<div class="p"><span>Pending cheque<small>'+esc((e.bank||'Bank?')+(e.chq?', No. '+e.chq:'')+', '+dstr(e.ts))+'</small></span><span><b>'+rs(e.amt)+'</b><br><button class="sm" data-c="clear" data-id="'+e.id+'">Clear</button> <button class="sm" data-c="bounce" data-id="'+e.id+'">Bounce</button></span></div>'}).join('');
+  h+='<h2>Poora ledger</h2>'+(cnt?'<div style="overflow-x:auto"><table class="tb"><tr><th>Tareekh</th><th>Vivaran</th><th class="r">Diye</th><th class="r">Liye</th><th class="r">Balance</th><th></th></tr>'+c.rows.map(function(r){var e=r.e;return '<tr><td>'+dstr(e.ts)+'</td><td>'+esc(detTxt(e))+'</td><td class="r">'+(e.type==='gave'?fmt(e.amt):'')+'</td><td class="r">'+(e.type==='took'?fmt(e.amt):'')+'</td><td class="r">'+bt(r.bal)+'</td><td><button class="sm" data-del="'+e.id+'" aria-label="Entry hatao">🗑</button></td></tr>'}).join('')+'<tr><th></th><th>Kul</th><th class="r">'+fmt(c.gave)+'</th><th class="r">'+fmt(c.took)+'</th><th class="r">'+bt(c.bal)+'</th><th></th></tr></table></div>':'<div class="empty">Abhi koi entry nahi.</div>');
+  h+='<div class="g2"><button class="btn" data-a="pdf-dl">PDF download</button><button class="btn" data-a="pdf-sh">PDF share</button><button class="btn" data-a="xlsx-dl">Excel download</button><button class="btn" data-a="xlsx-sh">Excel share</button></div>';
+  h+='<div class="row"><button class="sm" data-a="del">Khaata hatao</button></div>';
+  $('ppd').innerHTML=h;
+}
+$('ppd').onclick=function(ev){
+  var n=PS,b=ev.target.closest('[data-a],[data-c],[data-del]');if(!b||!n)return;
+  var a=b.getAttribute('data-a'),c=b.getAttribute('data-c'),dl=b.getAttribute('data-del');
+  if(c){var id=b.getAttribute('data-id'),e=E.find(function(x){return String(x.id)===id});if(e){e.st=c==='bounce'?'bounced':'cleared';save();render();ppDetail(n);log('app','Cheque '+(c==='bounce'?'bounce':'clear')+' likh diya.')}return}
+  if(dl){E=E.filter(function(x){return String(x.id)!==dl});save();render();ppDetail(n);log('app','Entry hata di.');return}
+  if(a==='back'){PS='';ppRender();window.scrollTo(0,0);return}
+  if(a==='savec'){var d=nrm($('ppph').value).replace(/\D/g,'');if(d)PH[n]=normPhone(d);else delete PH[n];PX[n]={addr:$('ppad').value.trim(),note:$('ppnt').value.trim()};sj(KP,PH);sj(KX,PX);ppDetail(n);log('app','Rabta save ho gaya.');return}
+  if(a==='saved'){var v=$('ppdu').value;if(!v)delete DU[n];else{var p=v.split('-');DU[n]=new Date(+p[0],+p[1]-1,+p[2]).getTime()}sj(KD,DU);render();ppDetail(n);log('app','Wada save ho gaya.');return}
+  if(a==='cleard'){delete DU[n];sj(KD,DU);render();ppDetail(n);log('app','Wada hata diya.');return}
+  if(a==='wa'){var bal=groups()[n]||0;if(bal<=0){log('app',n+' se aap ko lena nahi.');return}if(!PH[n]){log('app','Pehle mobile number likh kar Save karo.');return}sendWA(n,bal);return}
+  if(a&&/^(pdf|xlsx)-(dl|sh)$/.test(a)){var q=a.split('-');doExport(q[0],n,q[1]==='sh',false);return}
+  if(a==='del'){if(!b.getAttribute('data-sure')){b.setAttribute('data-sure','1');b.textContent='Pakka hatao? Dobara dabao';return}
+    E=E.filter(function(x){return x.name!==n});delete PH[n];delete PX[n];delete DU[n];save();sj(KP,PH);sj(KX,PX);sj(KD,DU);PS='';render();ppRender();log('app',n+' ka khaata hata diya.')}
+};
+$('list').onclick=function(ev){var r=ev.target.closest('[data-n]');if(r)ppOpen(r.getAttribute('data-n'))};
+$('list').onkeydown=function(ev){if(ev.key==='Enter'){var r=ev.target.closest('[data-n]');if(r)ppOpen(r.getAttribute('data-n'))}};
+$('pps').oninput=function(){ppRender()};
+function createPerson(n,ph){
+  n=(n||'').trim();if(!n){say('Naam samajh nahi aaya.','नाम समझ नहीं आया।');return}
+  var ex=allNames().filter(function(x){return x.toLowerCase()===n.toLowerCase()||(skey(x)&&skey(x)===skey(n))})[0];
+  if(ex){ppOpen(ex);say(ex+' pehle se maujood hai, details khol di.',ex+' पहले से मौजूद है, डिटेल खोल दी।');return}
+  PX[n]=PX[n]||{addr:'',note:''};if(ph&&ph.length>=10)PH[n]=normPhone(ph);sj(KX,PX);sj(KP,PH);render();ppOpen(n);
+  say(n+' ka naya khaata bana diya.',n+' का नया खाता बना दिया।');
+}
+$('ppadd').onclick=function(){
+  var n=$('ppn').value.trim();if(!n){log('app','Naam likho.');return}
+  var d=nrm($('ppp').value).replace(/\D/g,''),ex=allNames().filter(function(x){return x.toLowerCase()===n.toLowerCase()})[0];
+  if(ex){ppOpen(ex);log('app',ex+' pehle se maujood hai.');return}
+  PX[n]={addr:$('ppa').value.trim(),note:$('ppw').value.trim()};if(d.length>=10)PH[n]=normPhone(d);sj(KX,PX);sj(KP,PH);
+  ['ppn','ppp','ppa','ppw'].forEach(function(i){$(i).value=''});render();ppOpen(n);log('app',n+' ka naya khaata bana diya.');
+};
+function personInfo(n){
+  var c=sections(n)[0]||{rows:[],bal:0},pcs=chqs().filter(function(e){return e.name===n&&isPend(e)}),last=c.rows[c.rows.length-1],r=[],d=[],bal=c.bal;
+  if(bal>0){r.push(n+' se aap ko '+fmt(bal)+' lene hain');d.push(n+' से आपको '+fmt(bal)+' रुपये लेने हैं')}
+  else if(bal<0){r.push(n+' ko aap ko '+fmt(bal)+' dene hain');d.push(n+' को आपको '+fmt(bal)+' रुपये देने हैं')}
+  else{r.push(n+' ka hisaab barabar hai');d.push(n+' का हिसाब बराबर है')}
+  r.push(c.rows.length+' entries');d.push(c.rows.length+' एंट्री');
+  if(PH[n]){r.push('mobile '+PH[n]);d.push('मोबाइल '+PH[n].split('').join(' '))}
+  if(DU[n]){r.push('wada '+dstr(DU[n]));d.push('वादा '+dstr(DU[n]))}
+  if(pcs.length){r.push(pcs.length+' cheque pending');d.push(pcs.length+' चेक पेंडिंग')}
+  if(last){r.push('aakhri entry '+(last.e.type==='gave'?'diye ':'liye ')+fmt(last.e.amt)+' '+dstr(last.e.ts));d.push('आखिरी एंट्री '+(last.e.type==='gave'?'दिए ':'लिए ')+fmt(last.e.amt))}
+  say(r.join(', ')+'.',d.join(', ')+'।');
+}
+function bkRender(){
+  if(!$('bkl'))return;
+  var names=UB.slice();chqs().forEach(function(e){if(e.bank&&!names.some(function(n){return n.toLowerCase()===e.bank.toLowerCase()}))names.push(e.bank)});
+  $('bkl').innerHTML=names.length?names.map(function(b){
+    var r=chqs().filter(function(e){return (e.bank||'').toLowerCase()===b.toLowerCase()}),tot=0,pd=0,d=bdOf(b)||{};r.forEach(function(e){tot+=e.amt;if(isPend(e))pd++});
+    var det=[d.title,d.acc&&'A/C '+d.acc,d.branch].filter(Boolean).join(', ');
+    return '<div class="p"><span>'+esc(b)+(det?'<small>'+esc(det)+'</small>':'')+'<small>'+r.length+' cheque, kul '+rs(tot)+', pending '+pd+'</small></span><span><button class="sm" data-rd="'+esc(b)+'">Detail</button> <button class="sm" data-re="'+esc(b)+'">Badlo</button>'+(hasBank(b)?' <button class="sm" data-rb="'+esc(b)+'">Hatao</button>':'')+'</span></div>'}).join(''):'<div class="empty">Abhi koi bank nahi. Upar naam likh kar save karo, ya bolo: bank add karo HDFC.</div>';
+  var pc=chqs().filter(isPend).reverse();
+  $('chl').innerHTML=pc.length?pc.map(function(e){
+    return '<div class="p"><span>'+esc(e.name)+' - '+(e.type==='gave'?'diya':'liya')+'<small>'+esc((e.bank||'Bank?')+(e.chq?', No. '+e.chq:'')+', '+dstr(e.ts))+'</small></span><span><b class="'+(e.type==='gave'?'pos':'neg')+'">'+rs(e.amt)+'</b><br><button class="sm" data-c="clear" data-id="'+e.id+'">Clear</button> <button class="sm" data-c="bounce" data-id="'+e.id+'">Bounce</button></span></div>'}).join(''):'<div class="empty">Koi pending cheque nahi.</div>';
+}
+function bkDetail(b){
+  var l=b.toLowerCase(),r=chqs().filter(function(e){return (e.bank||'').toLowerCase()===l}).reverse(),d=bdOf(b)||{},tot=0;r.forEach(function(e){tot+=e.amt});
+  $('bkd').innerHTML='<h2>'+esc(b)+' ki detail</h2><div class="card">'+(d.title?'Title: '+esc(d.title)+'<br>':'')+(d.acc?'Account number: '+esc(d.acc)+'<br>':'')+(d.branch?'Branch: '+esc(d.branch)+'<br>':'')+r.length+' cheque, kul '+rs(tot)+'</div>'+(r.length?'<div style="overflow-x:auto"><table class="tb"><tr><th>Tareekh</th><th>Naam</th><th>Cheque no.</th><th>Haal</th><th class="r">Raqam</th></tr>'+r.map(function(e){return '<tr><td>'+dstr(e.ts)+'</td><td>'+esc(e.name)+' ('+(e.type==='gave'?'diya':'liya')+')</td><td>'+esc(e.chq||'-')+'</td><td>'+(e.st==='cleared'?'Clear':e.st==='bounced'?'BOUNCE':'Pending')+'</td><td class="r">'+fmt(e.amt)+'</td></tr>'}).join('')+'</table></div>':'');
+  $('bkd').scrollIntoView({behavior:'smooth'});
+}
+$('bka').onclick=function(){
+  var v=$('bkn').value.trim();if(!v){log('app','Bank ka naam likho.');return}
+  var n=prettyBank(bankName(v)||v),ex=bdOf(n)||{},acc=$('bkacc').value.trim(),ti=$('bkti').value.trim(),br=$('bkbr').value.trim(),isNew=!hasBank(n);
+  if(isNew){UB.push(n);sj(KB,UB)}
+  if(acc||ti||br||isNew){BD[n]={acc:acc||ex.acc||'',title:ti||ex.title||'',branch:br||ex.branch||''};sj(KBD,BD)}
+  ['bkn','bkacc','bkti','bkbr'].forEach(function(i){$(i).value=''});bkRender();
+  say((isNew?'Bank jod diya: ':'Bank ki detail save ho gayi: ')+n+'.',(isNew?'बैंक जोड़ दिया: ':'बैंक की डिटेल सेव हो गई: ')+n+'।');
+};
+$('bkl').onclick=function(ev){
+  var b=ev.target.closest('[data-rb],[data-re],[data-rd]');if(!b)return;
+  if(b.hasAttribute('data-rb')){var n=b.getAttribute('data-rb');UB=UB.filter(function(x){return x!==n});sj(KB,UB);bkRender();return}
+  if(b.hasAttribute('data-re')){var m=b.getAttribute('data-re'),d=bdOf(m)||{};$('bkn').value=m;$('bkacc').value=d.acc||'';$('bkti').value=d.title||'';$('bkbr').value=d.branch||'';$('bkn').focus();return}
+  bkDetail(b.getAttribute('data-rd'));
+};
+Array.prototype.forEach.call(document.querySelectorAll('#chips [data-ex]'),function(b){b.onclick=function(){handle(this.getAttribute('data-ex'))}});
+var GR='Assalam o Alaikum! Hisaab Kitaab mein khush aamdeed. Aap kya karna chahte hain? Mic dabao aur bolo, baaqi sab kuch left menu mein hai.',GD='अस्सलाम ओ अलैकुम! हिसाब किताब में खुश आमदीद। आप क्या करना चाहते हैं? माइक दबाओ और बोलो, बाकी सब कुछ बाईं तरफ़ मेनू में है।';
+setTimeout(function(){say(GR,GD)},700);
 render();
 })();
 </script>
