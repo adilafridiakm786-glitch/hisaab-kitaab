@@ -64,6 +64,8 @@ select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var
 .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
 .keys button{font:inherit;font-size:20px;padding:14px 0;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
 .keys button.op{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
+.btn.no{background:var(--out);color:#fff}
+.sm{font:inherit;font-size:14px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
 </style>
 </head>
 <body>
@@ -80,8 +82,10 @@ select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var
   <div class="row"><input id="txt" placeholder="Ya yahan likho: Ramesh ko 500 diye" autocomplete="off"><button class="btn" id="go">Bhejo</button></div>
 </div>
 <div class="log" id="log" aria-live="polite"></div>
+<div id="yn" class="g2" hidden><button class="btn" id="yb">Haan</button><button class="btn no" id="nb">Nahi</button></div>
 
 <div id="home">
+<h2 id="dueh" hidden>Wade (yaad dihani)</h2><div id="duew"></div>
 <h2>Sab ke khaate</h2>
 <div id="list"></div>
 
@@ -104,7 +108,7 @@ select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var
 <h2>Kya kya bol sakte ho</h2>
 <div class="help">
 “Ramesh ko 500 diye” · “Suresh se 200 liye” · “Ramesh ne 300 wapas kiye” · “Ramesh ka hisaab batao” · “Ramesh ki history” · “Total batao” · “Sab ke naam batao” · “Ramesh ka hisaab saaf karo” · “Wapas” (aakhri entry hatao) · “Ramesh ko 5000 cheque diya, HDFC bank, number 123456, wajah dukaan ka kiraya” · “Aakhri entry mein note likho kiraya” · “Cheque number likho 123456” · “Ramesh ka ledger dikhao” · “Ramesh ka ledger PDF banao” · “Sab ka Excel share karo” · “Madad”
-<br>Sab kuch awaaz se hota hai, lekin chaho to upar likh kar bhi bhej sakte ho.
+<br>Naye (v0.2): “Bank add karo HDFC” · “Bank list batao” · “HDFC ke cheque batao” · “Pending cheque batao” · “Ramesh ka cheque clear ho gaya” · “Ramesh ka wada 15 tareekh” · “Aaj kis ka wada hai” · “Ramesh ka number 0300 1234567” · “Ramesh ko WhatsApp bhejo” · “Aaj ka hisaab batao” · “Aakhri entry ki raqam 600 karo” · “Backup lo”<br>Sab kuch awaaz se hota hai, lekin chaho to upar likh kar bhi bhej sakte ho.
 </div>
 
 </div>
@@ -128,18 +132,32 @@ select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var
   <div class="help" style="margin-top:12px">Awaaz se: “5000 ka 12 percent” · “600 5000 ka kitne percent hai” · “5000 par 12 percent jodo” · “500 plus 200 minus 50” · “500 ko 2 se guna karo”</div>
 </div>
 
+<div id="bkv" hidden>
+  <h2>Mere bank</h2>
+  <div class="card">
+    <div class="row"><input id="bkn" placeholder="Bank ka naam, jaise HDFC" autocomplete="off"><button class="btn" id="bka">Bank jodo</button></div>
+    <div id="bkl" style="margin-top:10px"></div>
+  </div>
+  <h2>Pending cheque</h2>
+  <div id="chl"></div>
+</div>
+<input type="file" id="rf" accept=".json,application/json" hidden>
 <div id="scrim"></div>
 <nav id="dr" aria-label="Menu" aria-hidden="true">
   <b style="font-size:20px">Menu</b>
   <button data-v="home">Hisaab (Home)</button>
   <button data-v="pc">Percentage aur Calculator</button>
+  <button data-v="bk">Bank aur Cheque</button>
   <button data-v="led">Ledger aur Export</button>
+  <button id="bku">Backup lo</button>
+  <button id="rs">Backup wapas lao</button>
+  <button id="dg">Awaaz ki jaanch</button>
   <div class="ver" id="ver2"></div>
 </nav>
 
 <script>
 (function(){
-var VER='0.1';
+var VER='0.2';
 var KEY='hisab-kitab-v1',mem=[];
 function load(){try{var r=localStorage.getItem(KEY);return r?JSON.parse(r):mem}catch(e){return mem}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(E))}catch(e){mem=E}}
@@ -152,7 +170,7 @@ function fmt(n){return Math.abs(n).toLocaleString('en-IN')}
 /* ---- parse ---- */
 var NUM={'ek':1,'do':2,'teen':3,'char':4,'panch':5,'paanch':5,'das':10,'bees':20,'pachas':50,'dedh':1.5,'dhai':2.5,'एक':1,'दो':2,'तीन':3,'चार':4,'पांच':5,'पाँच':5,'छह':6,'छः':6,'सात':7,'आठ':8,'नौ':9,'दस':10,'बीस':20,'तीस':30,'चालीस':40,'पचास':50,'साठ':60,'सत्तर':70,'अस्सी':80,'नब्बे':90,'डेढ़':1.5,'डेढ':1.5,'ढाई':2.5,'पच्चीस':25,'पंद्रह':15,'बारह':12,'ग्यारह':11};
 var MUL={'sau':100,'hazar':1000,'hazaar':1000,'lakh':100000,'सौ':100,'हज़ार':1000,'हजार':1000,'लाख':100000};
-var STOP=new RegExp('^('+['यार','भाई','अरे','सुनो','सुन','देखो','अच्छा','तो','बस','ये','वो','जी','हाँ','हां','आज','अभी','कल','लिखो','लिख','डालो','डाल','जोड़ो','जोड़','एंट्री','कर','करो','मैंने','मैने','मैं','मुझे','मुझसे','हिसाब','खाते','में','का','की','के','नया','रुपये','रुपए','रुपया','रूपये','पैसे','diye','diya','liye','liya','kiye','kiya','mile','mila','de','दिए','दिया','दिये','लिए','लिया','लिये','किए','किया','मिले','मिला','दे','yaar','yar','bhai','are','arey','suno','sun','dekho','achha','accha','to','bas','ye','woh','wo','ji','haan','han','ok','okay','aaj','abhi','kal','likho','likh','dalo','dal','jodo','jod','add','entry','kar','karo','maine','main','mujhe','mujhse','hisaab','hisab','khate','mein','ka','ki','ke','naya','rupay','rupaye','rupaya','rupees','rupee','rs','paise','paisa','batao','bata','total','kul','history','saaf','safai','clear','settle','khatam','kitna','kitne','madad','help','percent','percentage','parsent','pratishat','परसेंटेज','पर्सेंटेज','प्रतिशत','परसेंट','पर्सेंट','फीसदी','फीसद','plus','jodo','minus','ghatao','guna','gunaa','into','multiply','bhaag','divide','calculator','calculate','kitne','nikalo','nikal','of','menu','kholo','band','home','version','bill','number','जोड़ो','घटाओ','गुणा','भाग','कैलकुलेटर','कितने','निकालो','मेन्यू','खोलो','बंद','होम','वर्शन','बिल','नंबर','ledger','pdf','excel','xlsx','banao','bana','dikhao','dikha','download','share','bhejo','bhej','sabka','poora','pura','लेजर','पीडीएफ','एक्सेल','बनाओ','दिखाओ','डाउनलोड','शेयर','भेजो','पूरा','सबका','wapas','undo','naam','list','sabhi','sab','बताओ','बता','कुल','टोटल','साफ','साफ़','खत्म','कितना','मदद','वापस','सब','नाम','सभी','लिस्ट','हिस्ट्री'].join('|')+')$','i');
+var STOP=new RegExp('^('+['यार','भाई','अरे','सुनो','सुन','देखो','अच्छा','तो','बस','ये','वो','जी','हाँ','हां','आज','अभी','कल','लिखो','लिख','डालो','डाल','जोड़ो','जोड़','एंट्री','कर','करो','मैंने','मैने','मैं','मुझे','मुझसे','हिसाब','खाते','में','का','की','के','नया','रुपये','रुपए','रुपया','रूपये','पैसे','diye','diya','liye','liya','kiye','kiya','mile','mila','de','दिए','दिया','दिये','लिए','लिया','लिये','किए','किया','मिले','मिला','दे','yaar','yar','bhai','are','arey','suno','sun','dekho','achha','accha','to','bas','ye','woh','wo','ji','haan','han','ok','okay','aaj','abhi','kal','likho','likh','dalo','dal','jodo','jod','add','entry','kar','karo','maine','main','mujhe','mujhse','hisaab','hisab','khate','mein','ka','ki','ke','naya','rupay','rupaye','rupaya','rupees','rupee','rs','paise','paisa','batao','bata','total','kul','history','saaf','safai','clear','settle','khatam','kitna','kitne','madad','help','mera','meri','mere','cheque','chek','clear','cleared','bounce','pending','wada','waada','wade','waade','wapsi','tareekh','tarikh','din','whatsapp','yaad','dilao','reminder','backup','jaanch','mahine','hafte','aakhri','last','raqam','amount','badlo','badal','gaya','gayi','khata','khaata','bank','percent','percentage','parsent','pratishat','परसेंटेज','पर्सेंटेज','प्रतिशत','परसेंट','पर्सेंट','फीसदी','फीसद','plus','jodo','minus','ghatao','guna','gunaa','into','multiply','bhaag','divide','calculator','calculate','kitne','nikalo','nikal','of','menu','kholo','band','home','version','bill','number','जोड़ो','घटाओ','गुणा','भाग','कैलकुलेटर','कितने','निकालो','मेन्यू','खोलो','बंद','होम','वर्शन','बिल','नंबर','ledger','pdf','excel','xlsx','banao','bana','dikhao','dikha','download','share','bhejo','bhej','sabka','poora','pura','लेजर','पीडीएफ','एक्सेल','बनाओ','दिखाओ','डाउनलोड','शेयर','भेजो','पूरा','सबका','wapas','undo','naam','list','sabhi','sab','बताओ','बता','कुल','टोटल','साफ','साफ़','खत्म','कितना','मदद','वापस','सब','नाम','सभी','लिस्ट','हिस्ट्री'].join('|')+')$','i');
 var MARK=/^(को|से|ने|ko|se|ne)$/i;
 function wordAmt(w){var tot=0,cur=0,got=false;for(var i=0;i<w.length;i++){var x=w[i];
   if(MUL[x]){got=true;if(MUL[x]===100)cur=(cur||1)*100;else{tot+=(cur||1)*MUL[x];cur=0}}
@@ -205,7 +223,7 @@ function ext(t){
   m=x.match(/(?:number|nambar|nambr|no\.?|नंबर|नम्बर)(?:\s+(?:is|hai|है|likho|likh|karo|do|लिखो|लिख|करो|दो))*\s*:?\s*(\d[\d\s]{2,}\d|\d{3,})/i);
   if(m){o.chq=m[1].replace(/\s+/g,'');x=x.replace(m[0],' ')}
   if(m=x.match(/(?:bank|बैंक)\s+(?:of|ऑफ)\s+([A-Za-z\u0900-\u097F]+)/i)){o.bank='Bank of '+m[1];x=x.replace(m[0],' ')}
-  else if(m=x.match(new RegExp('(?:^|\\s)('+BANKS+')(?:\\s+(?:bank|बैंक))?(?=\\s|$)','i'))){o.bank=m[1].toUpperCase();x=x.replace(m[0],' ')}
+  else if(m=x.match(new RegExp('(?:^|\\s)('+bankList()+')(?:\\s+(?:bank|बैंक))?(?=\\s|$)','i'))){o.bank=canonBank(m[1]);x=x.replace(m[0],' ')}
   else if(m=x.match(/([A-Za-z\u0900-\u097F]+)\s+(?:bank|बैंक)(?=\s|$)/i)){if(!STOP.test(m[1])&&!MARK.test(m[1]))o.bank=m[1];x=x.replace(m[0],' ')}
   if(new RegExp('('+CHQ+')','i').test(x))o.mode='cheque';
   else if(/(upi|gpay|google pay|phonepe|paytm|online|transfer|neft|rtgs|ऑनलाइन|ट्रांसफर|यूपीआई)/i.test(x))o.mode='online';
@@ -226,7 +244,7 @@ function ext(t){
 }
 
 /* ---- data ---- */
-function groups(){var g={};E.forEach(function(e){g[e.name]=(g[e.name]||0)+(e.type==='gave'?e.amt:-e.amt)});return g}
+function groups(){var g={};E.forEach(function(e){g[e.name]=(g[e.name]||0)+(e.st==='bounced'?0:(e.type==='gave'?e.amt:-e.amt))});return g}
 function findName(t){
   var tk=t.replace(/[।,،!?"“”']/g,' ').split(/\s+/).filter(function(x){return x&&!STOP.test(x)&&!MARK.test(x)}),ns=Object.keys(groups());
   for(var i=0;i<ns.length;i++){var k=skey(ns[i]);if(k.length<2)continue;
@@ -234,7 +252,7 @@ function findName(t){
   return '';
 }
 function totals(){var g=groups(),a=0,b=0;Object.keys(g).forEach(function(n){if(g[n]>0)a+=g[n];else b-=g[n]});return [a,b]}
-function render(){ents();selUp();
+function render(){ents();selUp();dueRender();
   var g=groups(),ns=Object.keys(g).sort(function(a,b){return Math.abs(g[b])-Math.abs(g[a])}),t=totals();
   $('tg').textContent=rs(t[0]);$('to').textContent=rs(t[1]);
   $('list').innerHTML=ns.length?ns.map(function(n){var v=g[n];
@@ -242,18 +260,18 @@ function render(){ents();selUp();
 }
 function add(n,a,type,note,x){
   x=x||{};var ex=E.find(function(e){return e.name.toLowerCase()===n.toLowerCase()});if(ex)n=ex.name;
-  E.push({id:Date.now()+Math.random(),name:n,amt:a,type:type,note:note||'',mode:x.mode||'cash',bank:x.bank||'',chq:x.chq||'',ts:Date.now()});save();render();return n;
+  E.push({id:Date.now()+Math.random(),name:n,amt:a,type:type,note:note||'',mode:x.mode||'cash',bank:x.bank||'',chq:x.chq||'',st:x.st||'',ts:Date.now()});save();render();return n;
 }
 function ents(){
   var r=E.slice(-10).reverse();
   $('ent').innerHTML=r.length?r.map(function(e){
     var d=new Date(e.ts).toLocaleDateString('en-IN',{day:'numeric',month:'short'}),x=[e.mode==='cheque'?'Cheque':e.mode==='online'?'Online':'Cash'];
-    if(e.bank)x.push(e.bank);if(e.chq)x.push('No. '+e.chq);
+    if(e.bank)x.push(e.bank);if(e.chq)x.push('No. '+e.chq);if(e.mode==='cheque'&&e.st)x.push(e.st==='cleared'?'Clear':e.st==='bounced'?'BOUNCE':'Pending');
     return '<div class="p"><span>'+esc(e.name)+' - '+(e.type==='gave'?'diye':'liye')+'<small>'+esc(x.join(', '))+'</small>'+(e.note?'<small>Wajah: '+esc(e.note)+'</small>':'')+'<small>'+d+'</small></span><span class="'+(e.type==='gave'?'pos':'neg')+'">'+rs(e.amt)+'</span></div>'}).join(''):'<div class="empty">Abhi koi entry nahi.</div>';
 }
 
 /* ---- awaaz: bolna ---- */
-function log(who,txt){var d=document.createElement('div');d.className='m '+who;d.textContent=txt;var L=$('log');L.appendChild(d);while(L.children.length>6)L.removeChild(L.firstChild)}
+function log(who,txt){var d=document.createElement('div');d.className='m '+who;d.textContent=txt;var L=$('log');L.appendChild(d);while(L.children.length>10)L.removeChild(L.firstChild)}
 var CAP=window.Capacitor,NP=!!(CAP&&CAP.isNativePlatform&&CAP.isNativePlatform()),PL=(CAP&&CAP.Plugins)||{},sid=0;
 function say(roman,dev){
   log('app',roman);
@@ -267,17 +285,39 @@ function say(roman,dev){
   if(!ss||!window.SpeechSynthesisUtterance){done();return}
   try{ss.cancel();var u=new SpeechSynthesisUtterance(dev);u.lang='hi-IN';u.onend=done;u.onerror=done;ss.speak(u)}catch(e){done()}
 }
-function ask(roman,dev,fn,no){pend={fn:fn,no:no};say(roman,dev)}
+function ask(roman,dev,fn,no){pend={fn:fn,no:no};showYN();say(roman,dev)}
+function showYN(){var y=$('yn');if(y)y.hidden=!(pend&&!pend.free)}
 
 /* ---- commands ---- */
 function handle(t){
   t=t.trim();if(!t)return;log('me',t);$('live').textContent='';
-  if(pend){var p=pend;pend=null;if(p.free){p.free(t);return}
+  if(pend){var p=pend;pend=null;showYN();if(p.free){p.free(t);return}
     if(!(parse(t).amt>0)&&/(nahi|nahin|nhi|नहीं|नही|नहि|\bno\b)/i.test(t)){if(p.no){p.no();return}say('Theek hai, kuch nahi likha. Dobara bolo.','ठीक है, कुछ नहीं लिखा। दोबारा बोलो।');return}
     if(!(parse(t).amt>0)&&/(haan|haa|han|\bha\b|ji|yes|theek|sahi|हाँ|हां|हा|जी|ठीक|सही)/i.test(t)){p.fn();return}
     if(!(parse(t).amt>0)){say('Samajh nahi aaya, kuch nahi likha.','समझ नहीं आया, कुछ नहीं लिखा।');return}}
   var X=ext(t),P=parse(X.rest),has=P.amt>0,nm=findName(X.rest),L=t.toLowerCase();
-  if(!has&&(X.note||X.chq||X.bank)&&E.length){
+  if(!has&&X.bank&&QRY.test(t)&&!/(add|jodo|naya|hata|delete|remove)/i.test(t)){bankReport(X.bank);return}
+  if(!has&&/(bank|बैंक)/i.test(t)&&bankCmd(t))return;
+  var pm=t.match(/(phone|mobile|fone|number|nambar|नंबर|फोन|मोबाइल)\D{0,12}((?:\+?\s*92|0)?[\d\s\-]{9,14})/i);
+  if(pm&&X.mode!=='cheque'){var pd=nrm(pm[2]).replace(/\D/g,'');if(pd.length>=10&&pd.length<=13){var pn=findName(t.replace(pm[0],' '));if(pn){PH[pn]=normPhone(pd);sj(KP,PH);say(pn+' ka number likh liya.',pn+' का नंबर लिख लिया।');return}}}
+  if(/(whatsapp|whats app|वॉट्सऐप|व्हाट्सएप|yaad dila|yaad kara|reminder|याद दिला)/i.test(t)){waCmd(nm);return}
+  if(!has&&(X.mode==='cheque'||X.chq)&&/(clear|cleared|क्लियर|pass ho|bounce|bounced|baunce|बाउंस|return ho)/i.test(t)){chqStatus(t,X,nm);return}
+  if(!has&&X.mode==='cheque'&&/(pending|baaqi|baki|abhi|kaun|kon|list|batao|bata|dikhao|बाकी|बताओ|दिखाओ)/i.test(t)){pendList(nm);return}
+  if(/(wada|waada|wade|waade|wapsi|due|वादा|वादे|वापसी)/i.test(t)){
+    if(!nm){dueList();return}
+    var wt=parseWhen(t);
+    if(!wt){say('Tareekh samajh nahi aayi. Jaise bolo: Ramesh ka wada 15 tareekh.','तारीख समझ नहीं आई।');return}
+    DU[nm]=wt;sj(KD,DU);render();say(nm+' ka wada '+dstr(wt)+' likh liya.',nm+' का वादा '+dstr(wt)+' लिख लिया।');return}
+  if(!has&&!nm&&/(aaj|आज|mahine|महीने|hafte|हफ्ते)/i.test(t)&&/(hisaab|total|kitna|kitne|batao|bata|हिसाब|कुल|कितना|कितने)/i.test(t)){periodSum(t);return}
+  if(has&&/(aakhri|last|pichhli|pichli|आखिरी|पिछली)/i.test(t)&&/(raqam|rakam|amount|रकम)/i.test(t)&&/(karo|badlo|badal|kar do|कर दो|बदलो|बदल)/i.test(t)){
+    var le2=E[E.length-1];if(!le2){say('Koi entry nahi hai.','कोई एंट्री नहीं है।');return}
+    var old=le2.amt;le2.amt=P.amt;save();render();say('Aakhri entry ('+le2.name+') ki raqam '+fmt(old)+' se '+fmt(P.amt)+' kar di.','आखिरी एंट्री ('+le2.name+') की रकम '+fmt(old)+' से '+fmt(P.amt)+' कर दी।');return}
+  if(!has&&nm&&/(khata|khaata|खाता|account)/i.test(t)&&/(hata|delete|mita|remove|हटा|मिटा)/i.test(t)){
+    var cnt=E.filter(function(e){return e.name===nm}).length;
+    ask(nm+' ka poora khaata ('+cnt+' entries) hata doon? Haan ya nahi bolo.',nm+' का पूरा खाता ('+cnt+' एंट्री) हटा दूँ? हाँ या नहीं बोलो।',function(){E=E.filter(function(e){return e.name!==nm});delete DU[nm];sj(KD,DU);save();render();say(nm+' ka khaata hata diya.',nm+' का खाता हटा दिया।')});return}
+  if(!has&&/(backup|बैकअप)/i.test(t)){doBackup(/(share|bhejo|bhej|send|शेयर|भेज)/i.test(t),true);return}
+  if(!has&&/(jaanch|jaanch|जांच|जाँच)/i.test(t)){diag();return}
+  if(!has&&(X.note||X.chq||X.bank)&&!QRY.test(t)&&E.length){
     var le=E[E.length-1],bits=[];
     if(X.note){le.note=X.note;bits.push('wajah: '+X.note)}
     if(X.bank){le.bank=X.bank;bits.push(X.bank+' bank')}
@@ -329,7 +369,7 @@ function handle(t){
     function fin(n){
       if(D.mode==='cheque'&&!D.bank&&!D.bq){D.bq=1;pend={free:function(t2){var b2=ext(t2);D.bank=SK.test(t2)&&!b2.bank?'':(b2.bank||t2.replace(/(bank|बैंक)/ig,'').trim().split(/\s+/).slice(0,3).join(' '));fin(n)}};say('Kis bank ka cheque hai?','किस बैंक का चेक है?');return}
       if(D.mode==='cheque'&&!D.chq&&!D.cq){D.cq=1;pend={free:function(t2){D.chq=ext('number '+t2).chq||'';fin(n)}};say('Cheque number kya hai?','चेक नंबर क्या है?');return}
-      add(n,P.amt,P.type,D.note,D);var q=ph(n),d=det();
+      learnBank(D.bank);D.st=D.mode==='cheque'?'pending':'';add(n,P.amt,P.type,D.note,D);var q=ph(n),d=det();
       say('Likh liya: '+q[0]+', '+d[0]+'. Ghalat ho to "wapas" bolo.',q[1]+', '+d[1]+', लिख लिया। गलत हो तो वापस बोलो।')}
     function commit(n){return function(){fin(n)}}
     if(kn&&kn.exact&&!P.conf){fin(kn.name);return}
@@ -350,14 +390,18 @@ function handle(t){
 var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 function ui(){$('mic').classList.toggle('on',listening);$('hint').textContent=listening?'Sun rahi hoon… bolo.':'Mic ek baar dabao. Phir bas bolte raho, main sunti rahungi.'}
 function resume(){if(listening&&!speaking)setTimeout(start,300)}
+var sid2=0;
 function startNative(){
-  var S=PL.SpeechRecognition,last='';
+  var S=PL.SpeechRecognition,last='',got=false,my=++sid2,wd=0;
   if(!listening||speaking)return;
+  function fin(t){if(got||my!==sid2)return;got=true;clearTimeout(wd);if(t)handle(t);else resume()}
+  wd=setTimeout(function(){try{S.stop()}catch(e){}},12000);
   S.removeAllListeners().then(function(){
-    S.addListener('partialResults',function(d){last=(d.matches&&d.matches[0])||'';$('live').textContent=last});
-    S.addListener('listeningState',function(d){if(d.status==='stopped'){var t=last;last='';if(t)handle(t);else resume()}});
+    S.addListener('partialResults',function(d){last=(d.matches&&d.matches[0])||last;$('live').textContent=last});
+    S.addListener('listeningState',function(d){if(d.status==='stopped')fin(last)});
     return S.start({language:'hi-IN',maxResults:1,partialResults:true,popup:false});
-  }).catch(function(){listening=false;ui();$('hint').textContent='Mic shuru nahi hua. Phone ki settings mein mic permission check karo.'});
+  }).then(function(r){if(r&&r.matches&&r.matches[0])fin(r.matches[0])})
+  .catch(function(e){clearTimeout(wd);listening=false;ui();$('hint').textContent='Mic shuru nahi hua: '+((e&&e.message)||e)+'. Menu mein "Awaaz ki jaanch" dabao.'});
 }
 function start(){
   if(NP&&PL.SpeechRecognition)return startNative();
@@ -388,13 +432,13 @@ $('go').onclick=sendTxt;
 $('txt').onkeydown=function(e){if(e.key==='Enter')sendTxt()};
 /* ---- Ledger aur Export ---- */
 function dstr(ts){return new Date(ts).toLocaleDateString('en-GB')}
-function detTxt(e){var a=[e.mode==='cheque'?'Cheque':e.mode==='online'?'Online':'Cash'];if(e.bank)a.push(e.bank);if(e.chq)a.push('No. '+e.chq);if(e.note)a.push('Wajah: '+e.note);return a.join(', ')}
+function detTxt(e){var a=[e.mode==='cheque'?'Cheque':e.mode==='online'?'Online':'Cash'];if(e.bank)a.push(e.bank);if(e.chq)a.push('No. '+e.chq);if(e.mode==='cheque'&&e.st)a.push(e.st==='cleared'?'Clear':e.st==='bounced'?'BOUNCE':'Pending');if(e.note)a.push('Wajah: '+e.note);return a.join(', ')}
 function stat(b){return b>0?'Lena hai':b<0?'Dena hai':'Barabar'}
 function bt(b){return fmt(b)+(b>0?' lena':b<0?' dena':'')}
 function sections(scope){
   var g=groups(),ns=scope?[scope]:Object.keys(g).sort(function(a,b){return a.toLowerCase()<b.toLowerCase()?-1:1});
   return ns.filter(function(n){return g[n]!==undefined}).map(function(n){
-    var bal=0,dg=0,tk=0,rows=E.filter(function(e){return e.name===n}).map(function(e){if(e.type==='gave'){bal+=e.amt;dg+=e.amt}else{bal-=e.amt;tk+=e.amt}return {e:e,bal:bal}});
+    var bal=0,dg=0,tk=0,rows=E.filter(function(e){return e.name===n}).map(function(e){if(e.st==='bounced')return {e:e,bal:bal};if(e.type==='gave'){bal+=e.amt;dg+=e.amt}else{bal-=e.amt;tk+=e.amt}return {e:e,bal:bal}});
     return {name:n,rows:rows,gave:dg,took:tk,bal:bal}});
 }
 function selUp(){var s=$('xs');if(!s)return;var v=s.value,ns=Object.keys(groups()).sort();s.innerHTML='<option value="">Sab khaate (poora ledger)</option>'+ns.map(function(n){return '<option>'+esc(n)+'</option>'}).join('');if(ns.indexOf(v)>-1)s.value=v}
@@ -565,7 +609,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-x]'),function(b){b
 function nf(x){return (Math.round(x*100)/100).toLocaleString('en-IN')}
 function menu(o){var d=$('dr');d.classList.toggle('open',o);$('scrim').classList.toggle('on',o);d.setAttribute('aria-hidden',o?'false':'true');if(o)d.querySelector('button').focus()}
 function view(v){
-  var pc=v==='pc';$('home').hidden=pc;$('sumw').hidden=pc;$('pcv').hidden=!pc;menu(false);
+  var pc=v==='pc',bk=v==='bk';$('home').hidden=pc||bk;$('sumw').hidden=pc||bk;$('pcv').hidden=!pc;$('bkv').hidden=!bk;if(bk)bkRender();menu(false);
   if(v==='led')setTimeout(function(){$('ledh').scrollIntoView({behavior:'smooth'})},60);else window.scrollTo(0,0);
 }
 $('ver').textContent='v'+VER;$('ver2').textContent='Version '+VER;
@@ -649,6 +693,139 @@ function calcVoice(t){
   cexp=ex.replace(/[+\-*\/]/g,function(c){return sym[c]});cshow();view('pc');
   say(cexp+' = '+nf(r),nf(r)+' होता है।');return true;
 }
+/* ---- v0.2: bank, cheque status, wade, WhatsApp, backup ---- */
+var KB='hisab-kitab-banks',KP='hisab-kitab-phones',KD='hisab-kitab-dues';
+function lj(k,d){try{var r=localStorage.getItem(k);return r?JSON.parse(r):d}catch(e){return d}}
+function sj(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+var UB=lj(KB,[]),PH=lj(KP,{}),DU=lj(KD,{});
+var QRY=/(batao|bata|dikhao|dikha|list|kitne|kitna|report|बताओ|बता|दिखाओ|लिस्ट|कितने|कितना)/i;
+function bankList(){return BANKS+(UB.length?'|'+UB.map(function(b){return b.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'\\s+')}).join('|'):'')}
+function canonBank(x){var l=x.toLowerCase().replace(/\s+/g,' ');for(var i=0;i<UB.length;i++)if(UB[i].toLowerCase()===l)return UB[i];return x.toUpperCase()}
+function prettyBank(n){return n.split(/\s+/).map(function(w){return w.length<=4?w.toUpperCase():w.charAt(0).toUpperCase()+w.slice(1)}).join(' ')}
+function hasBank(n){var l=n.toLowerCase();return UB.some(function(b){return b.toLowerCase()===l})}
+function learnBank(b){if(!b||b.length>25||hasBank(b))return;UB.push(b);sj(KB,UB)}
+function bankName(t){
+  var r=t.replace(/[।,!?"“”']/g,' ').replace(/\b(bank|banks|add|karo|kar|do|jodo|jod|naya|nayi|dalo|dal|shamil|hatao|hata|delete|remove|mita|list|batao|bata|dikhao|kaun|kon|se|kitne|mera|meri|mere|ka|ki|ke|ye|wala|wali|sab|likho)\b/ig,' ').replace(/(बैंक|जोड़ो|जोड़|नया|डालो|हटाओ|हटा|लिस्ट|बताओ|बता|करो|कर|मेरा|मेरी|का|की|के)/g,' ').replace(/\s+/g,' ').trim();
+  return r.split(' ').slice(0,3).join(' ');
+}
+function addBank(n){
+  n=prettyBank(n);if(!n){say('Bank ka naam samajh nahi aaya.','बैंक का नाम समझ नहीं आया।');return}
+  if(hasBank(n)){say(n+' pehle se jura hua hai.',n+' पहले से जुड़ा हुआ है।');return}
+  UB.push(n);sj(KB,UB);bkRender();say('Bank jod diya: '+n+'. Ab '+UB.length+' bank hain.','बैंक जोड़ दिया: '+n+'। अब '+UB.length+' बैंक हैं।');
+}
+function bankCmd(t){
+  var ad=/(add|jodo|jod|naya|nayi|dalo|dal|shamil|जोड़|नया|डाल)/i.test(t),rm=/(hata|delete|remove|mita|हटा|मिटा)/i.test(t),ls=/(list|kaun|kon|kitne|sab|batao|bata|dikhao|लिस्ट|कौन|कितने|बताओ|दिखाओ)/i.test(t),bn=bankName(t);
+  if(rm&&bn){var l=bn.toLowerCase(),i=UB.findIndex(function(b){return b.toLowerCase()===l||skey(b)===skey(bn)});
+    if(i<0){say(bn+' bank list mein nahi mila.',bn+' बैंक लिस्ट में नहीं मिला।');return true}
+    var nm2=UB.splice(i,1)[0];sj(KB,UB);bkRender();say(nm2+' hata diya.',nm2+' हटा दिया।');return true}
+  if(ad){if(bn)addBank(bn);else{pend={free:function(t2){addBank(bankName(t2)||t2.trim())}};showYN();say('Bank ka naam kya hai?','बैंक का नाम क्या है?')}return true}
+  if(ls&&!bn){if(!UB.length){say('Abhi koi bank nahi jura. Bolo: bank add karo HDFC.','अभी कोई बैंक नहीं जुड़ा।')}else say('Aap ke '+UB.length+' bank hain: '+UB.join(', ')+'.','आपके '+UB.length+' बैंक हैं: '+UB.join(', ')+'।');return true}
+  return false;
+}
+function chqs(){return E.filter(function(e){return e.mode==='cheque'})}
+function isPend(e){return e.st!=='cleared'&&e.st!=='bounced'}
+function bankReport(b){
+  var l=b.toLowerCase(),r=chqs().filter(function(e){return (e.bank||'').toLowerCase()===l}),tot=0,pd=0,pa=0;
+  r.forEach(function(e){tot+=e.amt;if(isPend(e)){pd++;pa+=e.amt}});
+  if(!r.length){say(b+' ka koi cheque nahi mila.',b+' का कोई चेक नहीं मिला।');return}
+  say(b+' ke '+r.length+' cheque, kul '+fmt(tot)+'. Pending '+pd+', un ki raqam '+fmt(pa)+'.',b+' के '+r.length+' चेक, कुल '+fmt(tot)+'। पेंडिंग '+pd+', उनकी रकम '+fmt(pa)+'।');
+}
+function pendList(nm){
+  var r=chqs().filter(function(e){return isPend(e)&&(!nm||e.name===nm)});
+  if(!r.length){say('Koi pending cheque nahi.','कोई पेंडिंग चेक नहीं।');return}
+  var tot=0;r.forEach(function(e){tot+=e.amt});var top=r.slice(-5).reverse();
+  say(r.length+' pending cheque, kul '+fmt(tot)+'. '+top.map(function(e){return e.name+' '+fmt(e.amt)+(e.bank?' '+e.bank:'')}).join(', ')+'.',r.length+' पेंडिंग चेक, कुल '+fmt(tot)+'। '+top.map(function(e){return e.name+' '+fmt(e.amt)+(e.bank?' '+e.bank:'')}).join(', ')+'।');
+}
+function chqStatus(t,X,nm){
+  var bounce=/(bounce|bounced|baunce|बाउंस|return)/i.test(t),c=chqs();
+  if(X.chq)c=c.filter(function(e){return e.chq===X.chq});else{c=c.filter(isPend);if(nm)c=c.filter(function(e){return e.name===nm})}
+  var ce=c[c.length-1];
+  if(!ce){say('Aisa koi pending cheque nahi mila.','ऐसा कोई पेंडिंग चेक नहीं मिला।');return}
+  ce.st=bounce?'bounced':'cleared';save();render();bkRender();
+  var d=ce.name+' ka '+fmt(ce.amt)+' ka cheque'+(ce.chq?' number '+ce.chq:'');
+  if(bounce)say(d+' bounce likh diya. Is ka hisaab hata diya gaya.',ce.name+' का '+fmt(ce.amt)+' का चेक बाउंस लिख दिया। इसका हिसाब हटा दिया गया।');
+  else say(d+' clear likh diya.',ce.name+' का '+fmt(ce.amt)+' का चेक क्लियर लिख दिया।');
+}
+function parseWhen(t){
+  var T=t.toLowerCase(),d=new Date(),m;d.setHours(0,0,0,0);var td=d.getTime();
+  if(/(parson|परसों)/.test(T))d.setDate(d.getDate()+2);
+  else if(/(agle hafte|agle hafta|अगले हफ्ते)/.test(T))d.setDate(d.getDate()+7);
+  else if(/(kal|कल)/.test(T))d.setDate(d.getDate()+1);
+  else if(/(aaj|आज)/.test(T)){}
+  else if((m=T.match(/(\d+)\s*(din|दिन)/)))d.setDate(d.getDate()+(+m[1]));
+  else if((m=T.match(/(\d+)\s*(hafte|hafta|हफ्ते|हफ्ता)/)))d.setDate(d.getDate()+7*(+m[1]));
+  else if((m=T.match(/(\d+)\s*(mahine|mahina|महीने)/)))d.setMonth(d.getMonth()+(+m[1]));
+  else if((m=T.match(/(\d{1,2})\s*(tareekh|tarikh|तारीख|date)/))){d.setDate(+m[1]);if(d.getTime()<td)d.setMonth(d.getMonth()+1)}
+  else return 0;
+  return d.getTime();
+}
+function dueList(){
+  var g=groups(),r=Object.keys(DU).filter(function(n){return g[n]>0}).sort(function(a,b){return DU[a]-DU[b]}),td=new Date().setHours(0,0,0,0);
+  if(!r.length){say('Abhi kisi ka wada likha nahi hai.','अभी किसी का वादा लिखा नहीं है।');return}
+  var late=r.filter(function(n){return DU[n]<td}),today=r.filter(function(n){return DU[n]===td}),next=r.filter(function(n){return DU[n]>td}).slice(0,3);
+  var a=[],b=[];
+  if(late.length){a.push('Wada guzar gaya: '+late.map(function(n){return n+' '+fmt(g[n])}).join(', '));b.push('वादा गुज़र गया: '+late.map(function(n){return n+' '+fmt(g[n])}).join(', '))}
+  if(today.length){a.push('Aaj ka wada: '+today.map(function(n){return n+' '+fmt(g[n])}).join(', '));b.push('आज का वादा: '+today.map(function(n){return n+' '+fmt(g[n])}).join(', '))}
+  if(next.length){a.push('Aage: '+next.map(function(n){return n+' '+dstr(DU[n])}).join(', '));b.push('आगे: '+next.map(function(n){return n+' '+dstr(DU[n])}).join(', '))}
+  say(a.join('. ')+'.',b.join('। ')+'।');
+}
+function dueRender(){
+  var h=$('dueh');if(!h)return;
+  var g=groups(),td=new Date().setHours(0,0,0,0),soon=td+3*864e5,r=Object.keys(DU).filter(function(n){return g[n]>0&&DU[n]<=soon}).sort(function(a,b){return DU[a]-DU[b]});
+  h.hidden=!r.length;
+  $('duew').innerHTML=r.map(function(n){return '<div class="p"><span>'+esc(n)+'<small>'+(DU[n]<td?'Wada guzar gaya: ':'Wada: ')+dstr(DU[n])+'</small></span><span class="pos">'+rs(g[n])+'</span></div>'}).join('');
+}
+function periodSum(t){
+  var d=new Date(),lb='Aaj';d.setHours(0,0,0,0);
+  if(/(mahine|महीने)/i.test(t)){d.setDate(1);lb='Is mahine'}else if(/(hafte|हफ्ते)/i.test(t)){d.setDate(d.getDate()-6);lb='Is hafte'}
+  var g=0,k=0,n=0;E.forEach(function(e){if(e.ts>=d.getTime()&&e.st!=='bounced'){n++;if(e.type==='gave')g+=e.amt;else k+=e.amt}});
+  if(!n){say(lb+' koi entry nahi hai.',lb+' कोई एंट्री नहीं है।');return}
+  say(lb+' '+n+' entries: aap ne '+fmt(g)+' diye aur '+fmt(k)+' liye.',lb+' '+n+' एंट्री: आपने '+fmt(g)+' रुपये दिए और '+fmt(k)+' रुपये लिए।');
+}
+function normPhone(d){if(d.charAt(0)==='0')d='92'+d.slice(1);else if(d.length===10&&d.charAt(0)==='3')d='92'+d;return d}
+function sendWA(n,bal){
+  var msg='Assalam o Alaikum '+n+', aap ke zimme Rs '+fmt(bal)+' baqi hain. Meherbani karke ada kar dein. Shukriya.',url='https://wa.me/'+PH[n]+'?text='+encodeURIComponent(msg);
+  say('WhatsApp khol rahi hoon.','व्हाट्सएप खोल रही हूँ।');setTimeout(function(){window.open(url,'_blank')},900);
+}
+function waCmd(nm){
+  if(!nm){say('Kis ko? Jaise bolo: Ramesh ko WhatsApp bhejo.','किसको? जैसे बोलो: रमेश को व्हाट्सएप भेजो।');return}
+  var bal=groups()[nm]||0;
+  if(bal<=0){say(nm+' se aap ko kuch lena nahi.',nm+' से आपको कुछ लेना नहीं है।');return}
+  if(!PH[nm]){pend={free:function(t2){var d2=nrm(t2).replace(/\D/g,'');if(d2.length<10){say('Number samajh nahi aaya.','नंबर समझ नहीं आया।');return}PH[nm]=normPhone(d2);sj(KP,PH);sendWA(nm,bal)}};showYN();say(nm+' ka mobile number bolo.',nm+' का मोबाइल नंबर बोलो।');return}
+  sendWA(nm,bal);
+}
+function doBackup(share,voice){
+  var fn='HisaabKitaab-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  deliver(fn,'application/json',u8(JSON.stringify({v:VER,E:E,B:UB,P:PH,D:DU})),share,voice);
+}
+function diag(){
+  [ 'App version '+VER,'Android app: '+(NP?'haan':'nahi (browser)'),'Sunne wala plugin: '+((NP&&PL.SpeechRecognition)?'mila':'nahi mila'),'Bolne wala plugin: '+((NP&&PL.TextToSpeech)?'mila':'nahi mila'),'Browser mein awaaz: '+(SR?'haan':'nahi')].forEach(function(x){log('app',x)});
+  if(NP&&PL.SpeechRecognition)PL.SpeechRecognition.available().then(function(r){log('app','Phone ki awaaz pehchan: '+(r&&r.available?'chalti hai':'NAHI chalti (Google ki speech service chahiye)'))}).catch(function(e){log('app','Jaanch mein error: '+((e&&e.message)||e))});
+  say('Jaanch ho gayi, upar dekho.','जांच हो गई, ऊपर देखो।');
+}
+function bkRender(){
+  if(!$('bkl'))return;
+  var names=UB.slice();chqs().forEach(function(e){if(e.bank&&!names.some(function(n){return n.toLowerCase()===e.bank.toLowerCase()}))names.push(e.bank)});
+  $('bkl').innerHTML=names.length?names.map(function(b){
+    var r=chqs().filter(function(e){return (e.bank||'').toLowerCase()===b.toLowerCase()}),tot=0,pd=0;r.forEach(function(e){tot+=e.amt;if(isPend(e))pd++});
+    return '<div class="p"><span>'+esc(b)+'<small>'+r.length+' cheque, kul '+rs(tot)+', pending '+pd+'</small></span>'+(hasBank(b)?'<button class="sm" data-rb="'+esc(b)+'">Hatao</button>':'')+'</div>'}).join(''):'<div class="empty">Abhi koi bank nahi. Naam likho ya bolo: bank add karo HDFC.</div>';
+  var pc=chqs().filter(isPend).reverse();
+  $('chl').innerHTML=pc.length?pc.map(function(e){
+    return '<div class="p"><span>'+esc(e.name)+' - '+(e.type==='gave'?'diya':'liya')+'<small>'+esc((e.bank||'Bank?')+(e.chq?', No. '+e.chq:'')+', '+dstr(e.ts))+'</small></span><span><b class="'+(e.type==='gave'?'pos':'neg')+'">'+rs(e.amt)+'</b><br><button class="sm" data-c="clear" data-id="'+e.id+'">Clear</button> <button class="sm" data-c="bounce" data-id="'+e.id+'">Bounce</button></span></div>'}).join(''):'<div class="empty">Koi pending cheque nahi.</div>';
+}
+$('bka').onclick=function(){var v=$('bkn').value.trim();if(v){addBank(bankName(v)||v);$('bkn').value=''}};
+$('bkl').onclick=function(ev){var b=ev.target.closest('[data-rb]');if(!b)return;var n=b.getAttribute('data-rb');UB=UB.filter(function(x){return x!==n});sj(KB,UB);bkRender()};
+$('chl').onclick=function(ev){var b=ev.target.closest('[data-c]');if(!b)return;var id=b.getAttribute('data-id'),e=E.find(function(x){return String(x.id)===id});if(!e)return;e.st=b.getAttribute('data-c')==='bounce'?'bounced':'cleared';save();render();bkRender();log('app',e.name+' ka cheque '+(e.st==='bounced'?'bounce':'clear')+' likh diya.')};
+$('yb').onclick=function(){handle('haan')};
+$('nb').onclick=function(){handle('nahi')};
+$('dg').onclick=function(){menu(false);diag()};
+$('bku').onclick=function(){menu(false);doBackup(false,false)};
+$('rs').onclick=function(){menu(false);$('rf').click()};
+$('rf').onchange=function(){
+  var f=this.files&&this.files[0];if(!f)return;var r=new FileReader();
+  r.onload=function(){try{var o=JSON.parse(r.result);if(!Array.isArray(o.E))throw 0;E=o.E;UB=o.B||[];PH=o.P||{};DU=o.D||{};save();sj(KB,UB);sj(KP,PH);sj(KD,DU);render();log('app','Backup wapas aa gaya: '+E.length+' entries.')}catch(e){log('app','Yeh backup file sahi nahi hai.')}};
+  r.readAsText(f);this.value='';
+};
 render();
 })();
 </script>
